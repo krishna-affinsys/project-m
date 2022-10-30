@@ -6,14 +6,13 @@ load_dotenv("dev.env")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -24,7 +23,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "m_core",
-    "m_messaging",
     "m_api",
 ]
 
@@ -100,3 +98,7 @@ TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER")
 
 ACC_NO_LEN = int(os.environ.get("ACC_NO_LEN"))
 CIF_LEN = int(os.environ.get("CIF_LEN"))
+MIN_BALANCE = int(os.environ.get("MIN_BALANCE"))
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
