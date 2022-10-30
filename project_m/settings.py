@@ -100,5 +100,5 @@ ACC_NO_LEN = int(os.environ.get("ACC_NO_LEN"))
 CIF_LEN = int(os.environ.get("CIF_LEN"))
 MIN_BALANCE = int(os.environ.get("MIN_BALANCE"))
 
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")

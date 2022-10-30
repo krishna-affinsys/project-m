@@ -32,6 +32,7 @@ def generate_card_number():
 
 # ====================================== Models =========================================
 
+
 class Customer(models.Model):
     GENDER = (
         ("M", "Male"),
@@ -64,9 +65,7 @@ class Account(models.Model):
         ("C", "Closed"),
         ("B", "Blocked"),
     )
-    account_number = models.BigIntegerField(
-        unique=True, primary_key=True, default=0
-    )
+    account_number = models.BigIntegerField(unique=True, primary_key=True, default=0)
     account_type = models.CharField(max_length=1, choices=ACCOUNT_TYPE, default="P")
     account_status = models.CharField(max_length=1, choices=ACCOUNT_STATUS, default="A")
     account_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -156,6 +155,7 @@ class Offer(models.Model):
 
 # ======================================Signal Methods =========================================
 
+
 @receiver(signals.post_save, sender=Account)
 def notify_account_creation(sender, instance, created, **kwargs):
     if created:
@@ -191,9 +191,11 @@ def pre_check_transaction_and_transact(sender, instance, **kwargs):
 
     if not check_balance(instance.transaction_sender, instance.transaction_amount):
         instance.transaction_status = "F"
-        send_sms(sen.customer.customer_phone,
-                 f"We have received your request and the transaction has failed due to insufficient funds "
-                 f"in your account. Your balance was not debited.")
+        send_sms(
+            sen.customer.customer_phone,
+            f"We have received your request and the transaction has failed due to insufficient funds "
+            f"in your account. Your balance was not debited.",
+        )
     else:
         sen.account_balance -= instance.transaction_amount
         rec.account_balance += instance.transaction_amount
@@ -203,30 +205,40 @@ def pre_check_transaction_and_transact(sender, instance, **kwargs):
 
         instance.transaction_status = "S"
 
-        send_sms(sen.customer.customer_phone,
-                 f"Rs. {instance.transaction_amount} was debited from your account {sen.account_number},  "
-                 f"as per your request. If the transaction was not made by you then please reach out to us "
-                 f"on our support channel.")
-        send_sms(rec.customer.customer_phone,
-                 f"Rs. {instance.transaction_amount} was credited to your account {rec.account_number}.")
+        send_sms(
+            sen.customer.customer_phone,
+            f"Rs. {instance.transaction_amount} was debited from your account {sen.account_number},  "
+            f"as per your request. If the transaction was not made by you then please reach out to us "
+            f"on our support channel.",
+        )
+        send_sms(
+            rec.customer.customer_phone,
+            f"Rs. {instance.transaction_amount} was credited to your account {rec.account_number}.",
+        )
 
 
 @receiver(signals.post_save, sender=TransactionRecord)
 def alert_on_low_bal(sender, instance, created, **kwargs):
     sen = instance.transaction_sender
     if sen.account_balance < settings.MIN_BALANCE:
-        send_sms(sen.customer.customer_phone, f"ALERT: You have only Rs. {sen.account_balance} in your account "
-                                              f"{sen.account_number}, lower than the minimum balance.")
+        send_sms(
+            sen.customer.customer_phone,
+            f"ALERT: You have only Rs. {sen.account_balance} in your account "
+            f"{sen.account_number}, lower than the minimum balance.",
+        )
 
 
 @receiver(signals.post_save, sender=Offer)
 def alert_on_offer(sender, instance, created, **kwargs):
-    if instance.offer_status == 'A':
-        phone_numbers = list(Customer.objects.all().values_list('customer_phone', flat=True))
+    if instance.offer_status == "A":
+        phone_numbers = list(
+            Customer.objects.all().values_list("customer_phone", flat=True)
+        )
         batch_send_sms(phone_numbers, instance.offer_description)
 
 
 # ====================================== User pull services =========================================
+
 
 def get_balance_request(mobile_number, account_number):
     bal = Account.objects.get(account_number=account_number).account_balance
@@ -235,24 +247,34 @@ def get_balance_request(mobile_number, account_number):
 
 def get_account_status(mobile_number, account_number):
     status = Account.objects.get(account_number=account_number).account_status
-    send_sms(mobile_number, f"Thank you for reaching out to us, your account is currently {status}")
+    send_sms(
+        mobile_number,
+        f"Thank you for reaching out to us, your account is currently {status}",
+    )
 
 
 def request_cheque(mobile_number, account_number):
     # TODO: add a RequestService table where the customer's requested services are stored
-    send_sms(mobile_number, f"We have received your request to dispatch a new cheque book for the "
-                            f"account {account_number}. Your request will be processed soon.")
+    send_sms(
+        mobile_number,
+        f"We have received your request to dispatch a new cheque book for the "
+        f"account {account_number}. Your request will be processed soon.",
+    )
 
 
-def request_card(account_number, card_type='D'):
+def request_card(account_number, card_type="D"):
     Card.objects.create(
         card_account=Account.objects.get(account_number=account_number),
         card_status="I",
         card_expiry=datetime.datetime.now() + datetime.timedelta(days=365),
         card_number=generate_card_number(),
-        card_type=card_type
+        card_type=card_type,
     )
-    customer_phone = Account.objects.get(account_number=account_number).customer.customer_phone
-    send_sms(customer_phone, f"We have received your request for a {card_type} card for the account {account_number}."
-                             f"The new card will be dispatched to your address after further processing.")
-
+    customer_phone = Account.objects.get(
+        account_number=account_number
+    ).customer.customer_phone
+    send_sms(
+        customer_phone,
+        f"We have received your request for a {card_type} card for the account {account_number}."
+        f"The new card will be dispatched to your address after further processing.",
+    )
