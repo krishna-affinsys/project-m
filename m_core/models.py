@@ -10,28 +10,6 @@ from django.utils import timezone
 from m_core.utils import send_sms, batch_send_sms
 from m_core.tasks import schedule_event
 
-
-def generate_account_id():
-    acc_id = get_random_string(length=settings.ACC_NO_LEN, allowed_chars="1234567890")
-    if Account.objects.filter(account_number=acc_id).exists():
-        generate_account_id()
-    return acc_id
-
-
-def generate_customer_id():
-    cif = get_random_string(length=settings.CIF_LEN, allowed_chars="1234567890")
-    if Customer.objects.filter(customer_id=cif).exists():
-        generate_customer_id()
-    return cif
-
-
-def generate_card_number():
-    card_number = get_random_string(length=16, allowed_chars="1234567890")
-    if Card.objects.filter(card_number=card_number).exists():
-        generate_card_number()
-    return card_number
-
-
 # ====================================== Models =========================================
 
 
@@ -275,6 +253,7 @@ def schedule_event(sender, instance, created, **kwargs):
 # ====================================== User pull services =========================================
 ## TODO: Create a module to receive user commands through sms and responsd back with the following methods.
 
+
 def get_balance_request(mobile_number, account_number):
     bal = Account.objects.get(account_number=account_number).account_balance
     send_sms(mobile_number, f"You're current account balance is Rs. {bal}")
@@ -313,3 +292,25 @@ def request_card(account_number, card_type="D"):
         f"We have received your request for a {card_type} card for the account {account_number}."
         f"The new card will be dispatched to your address after further processing.",
     )
+
+
+# Utils
+def generate_account_id():
+    acc_id = get_random_string(length=settings.ACC_NO_LEN, allowed_chars="1234567890")
+    if Account.objects.filter(account_number=acc_id).exists():
+        generate_account_id()
+    return acc_id
+
+
+def generate_customer_id():
+    cif = get_random_string(length=settings.CIF_LEN, allowed_chars="1234567890")
+    if Customer.objects.filter(customer_id=cif).exists():
+        generate_customer_id()
+    return cif
+
+
+def generate_card_number():
+    card_number = get_random_string(length=16, allowed_chars="1234567890")
+    if Card.objects.filter(card_number=card_number).exists():
+        generate_card_number()
+    return card_number
