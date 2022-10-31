@@ -10,6 +10,7 @@ from django.utils import timezone
 from m_core.utils import send_sms, batch_send_sms
 from m_core.tasks import schedule_event
 
+
 def generate_account_id():
     acc_id = get_random_string(length=settings.ACC_NO_LEN, allowed_chars="1234567890")
     if Account.objects.filter(account_number=acc_id).exists():
@@ -162,6 +163,7 @@ class Event(models.Model):
     def __str__(self):
         return str(self.id)
 
+
 # ======================================Signal Methods =========================================
 
 
@@ -245,22 +247,33 @@ def alert_on_offer(sender, instance, created, **kwargs):
         )
         batch_send_sms(phone_numbers, instance.offer_description)
 
+
 from datetime import datetime
 import time
 
+
 def datetime_from_utc_to_local(utc_datetime):
     now_timestamp = time.time()
-    offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(now_timestamp)
+    offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(
+        now_timestamp
+    )
     return utc_datetime + offset
+
 
 @receiver(signals.post_save, sender=Event)
 def schedule_event(sender, instance, created, **kwargs):
     if created:
-        phone_number = list(Customer.objects.all().values_list("customer_phone", flat=True))
-        schedule_event.apply_async(args = [instance.event_description, phone_number], eta=datetime_from_utc_to_local(instance.event_date))
+        phone_number = list(
+            Customer.objects.all().values_list("customer_phone", flat=True)
+        )
+        schedule_event.apply_async(
+            args=[instance.event_description, phone_number],
+            eta=datetime_from_utc_to_local(instance.event_date),
+        )
+
 
 # ====================================== User pull services =========================================
-
+## TODO: Create a module to receive user commands through sms and responsd back with the following methods.
 
 def get_balance_request(mobile_number, account_number):
     bal = Account.objects.get(account_number=account_number).account_balance
