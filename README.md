@@ -75,6 +75,10 @@ Typical pull services would include:
 - Foreign currency exchange rates enquiry
 
 
+### To-Do
+
+- [ ] Need to add an efficient SMS module.
+
 ---
 
 **Contact:** krishna.raj@affinsys.com
